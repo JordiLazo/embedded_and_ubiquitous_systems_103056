@@ -1,26 +1,30 @@
+#include <Servo.h>
+
 #include <Wire.h>
 #include "MAX30105.h"
 #include <LiquidCrystal_I2C.h>
 #include "heartRate.h"
 
+
 MAX30105 particleSensor;
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 unsigned long messageTimeColdoown = millis();
-long interalTimeLCD= 2000;
+long intervalTimeLCD= 1500;
 
 const byte RATE_SIZE = 4; //Increase this for more averaging. 4 is good.
 byte rates[RATE_SIZE]; //Array of heart rates
 byte rateSpot = 0;
 long lastBeat = 0; //Time at which the last beat occurred
-
+Servo myservo;
 float beatsPerMinute;
 int beatAvg;
-
+int potpin=0; 
 void setup()
 {
   Serial.begin(115200);
   lcd.begin();
   lcd.clear();
+  myservo.attach(9);
   Serial.println("Initializing...");
 
   // Initialize sensor
@@ -75,14 +79,21 @@ void loop()
   Serial.println();
   unsigned long currentTime = millis();
 
-  if(currentTime - messageTimeColdoown > interalTimeLCD ){
+  if(currentTime - messageTimeColdoown > intervalTimeLCD ){
     lcd.clear();
     messageTimeColdoown = currentTime;
     if(irValue < 50000){
       lcd.print("Introduce finger");
     }else{
       lcd.print("PPM=");
-      lcd.print(beatsPerMinute);      
+      lcd.print(beatsPerMinute);
+      
+      if(beatsPerMinute>80){
+        myservo.write(20);
+        }
+      else{
+        myservo.write(100);
+      }
     }
 
   }  
