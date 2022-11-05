@@ -24,17 +24,17 @@ def write_on_csv(json_missatge):
 
 def on_message(client, userdata, message):
     missatge_deco=str(message.payload.decode("utf-8"))
-    #print("el missatge es:",missatge_deco)
-    missatge = json.loads(missatge_deco)
-    write_on_csv(missatge)
+    print("el missatge es:",missatge_deco)
+    #missatge = json.loads(missatge_deco)
+    #write_on_csv(missatge)
     #print("message received ", str(message.payload.decode("utf-8")))
 
 
 def subscribe_MQTT():
-    client = mqtt.Client('SoftwareCaptacio')
+    client = mqtt.Client('SoftwareLazo')
     client.on_message = on_message
     client.connect('test.mosquitto.org')
-    client.subscribe('Hearthrate')
+    client.subscribe('SensorDidacLazo')
     client.loop_forever()
 
 
