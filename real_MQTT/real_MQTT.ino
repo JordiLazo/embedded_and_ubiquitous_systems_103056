@@ -22,6 +22,7 @@ float beatsPerMinute;
 int beatAvg;
 int potpin=0;
 String beats_str;
+String message_json;
 char beats[50];
  
 
@@ -201,8 +202,9 @@ void loop() {
     Serial.print("Publish message: ");
     Serial.println(textBuff);
     beats_str = String(beatsPerMinute); //converting ftemp (the float variable above) to a string 
-    beats_str.toCharArray(beats, beats_str.length() + 1); //packaging up the data to publish to mqtt whoa...
-
+    message_json="{\"heart\":"+beats_str+"}";
+    message_json.toCharArray(beats, message_json.length() + 1); //packaging up the data to publish to mqtt whoa...
+   
     client.publish("SensorDidacLazo", beats);
   }
 }
