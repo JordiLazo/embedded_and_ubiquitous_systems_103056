@@ -2,76 +2,98 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ESP32Servo.h>
 
-
-const char* ssid = "LAPTOP-DIDI";
-const char* password = "DidacContra";
+#define SERVO_PIN 26 // ESP32 pin GIOP26 connected to servo motor
+LiquidCrystal_I2C lcd(0x27,16,2);
+Servo servoMotor;
+const char* ssid = "Laptop-Jordi";
+const char* password = "30g4A870";
 const char* mqtt_server = "test.mosquitto.org";
+unsigned long messageTimeColdoown = millis();
+long intervalTimeMQTT= 1500;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+long lastMsg=0;
+char msg[50];
+int value=0;
 
-LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x3F for a 16 chars and 2 line display
-
-void setup_wifi() {
-
-  delay(10);
-  // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+void callback(char* topic, byte* payload, unsigned int length) {
+  payload[length] = '\0'; // Add a NULL to the end of the char* to make it a string.
+  int aNumber = atoi((char *)payload);
+  Serial.print("Message arrived in topic: ");
+  Serial.println(topic);
+  lcd.setCursor(0,1);
+  if(aNumber != 0){
+    lcd.clear();
+    lcd.print(aNumber);
+    if(aNumber > 150){
+      for (int pos = 0; pos <= 180; pos += 1) {
+        servoMotor.write(pos);
+        delay(15); // waits 15ms to reach the position
+        if(pos == 180){
+          //lcd.clear();
+          //lcd.print("Danger BPM");
+        }
+      }
+    }else{
+      for (int pos = 180; pos >= 0; pos -= 1) {
+        servoMotor.write(pos);
+        delay(15); // waits 15ms to reach the position
+        if(pos == 0){
+          //lcd.clear();
+          //lcd.print("Reached 0 degrees");
+        }
+      }
+    }
+  }else{
+    lcd.clear();
+    lcd.print("Wrong data");
   }
-
-  randomSeed(micros());
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  Serial.print("Message:");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+  Serial.println("-----------------------");
 }
-void reconnect() {
-  // Loop until we're reconnected
+void setup() {
+  Serial.begin(115200);
+  lcd.begin();
+  lcd.clear();
+  servoMotor.attach(SERVO_PIN);  // attaches the servo on ESP32 pin
+  WiFi.begin(ssid, password);
+ 
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi..");
+  }
+  Serial.println("Connected to the WiFi network");
+ 
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+ 
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
-    String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
-    // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    Serial.println("Connecting to MQTT...");
+ 
+    if (client.connect("ESP32Client")) {
+ 
       Serial.println("connected");
-      // Once connected, publish an announcement...
-      client.publish("outTopic", "hello world");
-      // ... and resubscribe
-      client.subscribe("inTopic");
+ 
     } else {
-      Serial.print("failed, rc=");
+ 
+      Serial.print("failed with state ");
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
+      delay(2000);
+ 
     }
   }
-}
+ 
+  client.subscribe("esp/test");
 
-void setup() {
-{
-  Serial.begin(115200);
-  // initialize the LCD
-  lcd.begin();
-  WiFi.begin(ssid, password);
-  
-  // Turn on the blacklight and print a message.
-  lcd.backlight();
-  lcd.print("Hello, world!");
-}
 }
 
 void loop() {
+  client.loop();
 }
