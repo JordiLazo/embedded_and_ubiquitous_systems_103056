@@ -7,8 +7,8 @@
 #define SERVO_PIN 26 // ESP32 pin GIOP26 connected to servo motor
 LiquidCrystal_I2C lcd(0x27,16,2);
 Servo servoMotor;
-const char* ssid = "Laptop-Jordi";
-const char* password = "30g4A870";
+const char* ssid = "LAPTOP-DIDI";
+const char* password = "DidacContra";
 const char* mqtt_server = "test.mosquitto.org";
 unsigned long messageTimeColdoown = millis();
 long intervalTimeMQTT= 1500;
@@ -28,7 +28,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   if(aNumber != 0){
     lcd.clear();
     lcd.print(aNumber);
-    if(aNumber > 150){
+    if(aNumber > 90){
       for (int pos = 0; pos <= 180; pos += 1) {
         servoMotor.write(pos);
         delay(15); // waits 15ms to reach the position
@@ -47,9 +47,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
         }
       }
     }
-  }else{
-    lcd.clear();
-    lcd.print("Wrong data");
   }
   Serial.print("Message:");
   for (int i = 0; i < length; i++) {
