@@ -202,9 +202,9 @@ void loop() {
     Serial.print("Publish message: ");
     Serial.println(textBuff);
     beats_str = String(beatsPerMinute); //converting ftemp (the float variable above) to a string 
-    message_json="{\"heart\":"+beats_str+"}";
-    message_json.toCharArray(beats, message_json.length() + 1); //packaging up the data to publish to mqtt whoa...
+    message_json=beats_str;
+    message_json.toCharArray(beats, message_json.length() + 1);
    
-    client.publish("SensorDidacLazo", beats);
+    client.publish("didacLazo/Heart", beats);
   }
 }
