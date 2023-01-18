@@ -163,6 +163,6 @@ void loop() {
     lastMsg = now;
     Serial.print("Publish message: ");
     Serial.println(textBuff);
-    client.publish("SensorDidacLazo", "Hola Caracola");
+    client.publish("SensorDidacLazo/Heart", "Hola Caracola");
   }
 }

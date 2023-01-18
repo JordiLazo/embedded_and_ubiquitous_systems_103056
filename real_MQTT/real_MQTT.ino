@@ -182,29 +182,30 @@ void loop() {
         beatAvg += rates[x];
       beatAvg /= RATE_SIZE;
     }
+     if (!client.connected()) {
+        reconnect();
+      }
+      client.loop();
+
+      readADXL();
+      
+      sprintf(textBuff, "X:%d Y:%d Z:%d",x,y,z);
+
+      unsigned long now = millis();
+      if (now - lastMsg > 3000) {
+        lastMsg = now;
+        Serial.print("Publish message: ");
+        Serial.println(textBuff);
+        beats_str = String(beatsPerMinute); //converting ftemp (the float variable above) to a string 
+        message_json=beats_str;
+        message_json.toCharArray(beats, message_json.length() + 1);
+      
+        client.publish("didacLazo/Heart", beats);
+      }
   }
   
 
   
 
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-
-  readADXL();
-  
-  sprintf(textBuff, "X:%d Y:%d Z:%d",x,y,z);
-
-  unsigned long now = millis();
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    Serial.print("Publish message: ");
-    Serial.println(textBuff);
-    beats_str = String(beatsPerMinute); //converting ftemp (the float variable above) to a string 
-    message_json=beats_str;
-    message_json.toCharArray(beats, message_json.length() + 1);
-   
-    client.publish("didacLazo/Heart", beats);
-  }
+ 
 }
